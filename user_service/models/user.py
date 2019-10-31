@@ -27,7 +27,7 @@ class User(db.Model, UserMixin):
     def __init__(self, user_name, user_email, user_password, user_first_name,
                  user_last_name, user_image_file):
         self.user_name = user_name
-        self.email = user_email
+        self.user_email = user_email
         self.user_password = user_password
         self.user_first_name = user_first_name
         self.user_last_name = user_last_name
