@@ -1,1 +1,0 @@
-"""Connector for user-service db"""
