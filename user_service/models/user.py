@@ -2,7 +2,7 @@
 from user_service import db
 from flask_security import UserMixin
 import datetime
-
+from user_service import bcrypt
 
 class User(db.Model, UserMixin):
     """"""
