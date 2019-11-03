@@ -31,3 +31,7 @@ class User(db.Model, UserMixin):
         self.user_first_name = user_first_name
         self.user_last_name = user_last_name
         self.user_image_file = user_image_file
+
+    @classmethod
+    def find_by_user_name(cls,user_name):
+        return cls.query.filter_by(user_name=user_name).first()
