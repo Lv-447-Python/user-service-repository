@@ -23,7 +23,6 @@ class User(db.Model, UserMixin):
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
 
-
     def __init__(self, user_name, user_email, user_password, user_first_name,
                  user_last_name, user_image_file):
         self.user_name = user_name

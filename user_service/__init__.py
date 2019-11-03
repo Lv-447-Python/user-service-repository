@@ -9,7 +9,7 @@ from flask_script import Manager
 
 app = Flask(__name__)
 api = Api(app)
-ma = Marshmallow(app)
+marshmallow = Marshmallow(app)
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -20,5 +20,3 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
-
-from user_service.models.user import User

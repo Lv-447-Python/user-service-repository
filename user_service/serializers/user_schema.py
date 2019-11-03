@@ -1,7 +1,6 @@
 """Schema for user-service"""
 from user_service import marshmallow
-from user_service.models.user import User
-from marshmallow import Schema, fields
+from marshmallow import fields
 
 
 class UserSchema(marshmallow.ModelSchema):
