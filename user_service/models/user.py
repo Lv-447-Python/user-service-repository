@@ -2,7 +2,7 @@
 from user_service import db
 from flask_security import UserMixin
 import datetime
-
+from user_service import bcrypt
 
 class User(db.Model, UserMixin):
     """"""
@@ -16,13 +16,12 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(15), nullable=False, unique=True)
     user_email = db.Column(db.String(15), nullable=False, unique=True)
-    user_password = db.Column(db.String(100), nullable=False)
+    user_password = db.Column(db.String(255), nullable=False)
     user_first_name = db.Column(db.String(15), nullable=False)
     user_last_name = db.Column(db.String(15), nullable=False)
     user_image_file = db.Column(db.String(15), nullable=False)
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
-
 
     def __init__(self, user_name, user_email, user_password, user_first_name,
                  user_last_name, user_image_file):
@@ -32,3 +31,7 @@ class User(db.Model, UserMixin):
         self.user_first_name = user_first_name
         self.user_last_name = user_last_name
         self.user_image_file = user_image_file
+
+    @classmethod
+    def find_by_user_name(cls,user_name):
+        return cls.query.filter_by(user_name=user_name).first()
