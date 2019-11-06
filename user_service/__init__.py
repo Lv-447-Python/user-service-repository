@@ -7,9 +7,11 @@ from flask_migrate import Migrate,MigrateCommand
 from flask_script import Manager
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail,  Message
 
 app = Flask(__name__)
 api = Api(app)
+
 
 bcrypt = Bcrypt(app)
 
@@ -19,6 +21,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:snoopy1@12
 app.config['SECRET_KEY'] = 'jwt-secret-string'
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME']= 'testingforserve@gmail.com'
+app.config['MAIL_PASSWORD'] = 'StrongPassword98'
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 marshmallow = Marshmallow(app)
