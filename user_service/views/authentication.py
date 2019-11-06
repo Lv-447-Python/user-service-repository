@@ -11,11 +11,68 @@ from flask_restful import Resource
 from user_service import bcrypt
 from flask_api import status
 from marshmallow import ValidationError
+from user_service import mail
+from user_service import app
+from flask_mail import Message
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
 USER_SCHEMA = UserSchema()
 
 JWT_TOKEN = 'jwt_token'
+
+
+def send_email(user_email,token):
+    """
+    Implementation of sending message on email
+    Args:
+        user_email:
+        token:
+
+    Returns:
+        status
+    """
+    try:
+        msg = Message("Hello, you tried to reset password", sender = 'testingforserve@gmail.com', recipients = [user_email])
+        msg.body = f'''For reset your password just follow this link: {api.url_for(ResetPasswordRequestResource, token=token, _external=True)} 
+        If you didn`t reset your password just ignore this message'''
+        mail.send(msg)
+    except:
+        return status.HTTP_400_BAD_REQUEST
+    return status.HTTP_200_OK
+
+
+class ResetPasswordRequestResource(Resource):
+    """Implementation of reset password request on mail"""
+    def post(self):
+        try:
+            data = request.json
+            user_email = data['user_email']
+            try:
+                user = User.query.filter_by(user_email=user_email).scalar()
+                token = user.get_reset_token()
+                try:
+                    send_email(user_email, token)
+                    return status.HTTP_200_OK
+                except ValueError:
+                    return status.HTTP_401_UNAUTHORIZED
+            except:
+                return status.HTTP_405_METHOD_NOT_ALLOWED
+        except:
+            return status.HTTP_408_REQUEST_TIMEOUT
+
+
+class SetPasswordResource(Resource):
+    pass
+
+
+# TODO: IF ONLY BUTTON LOGOUT CHANGE TO POST METHOD
+class LogoutResource(Resource):
+    """Implementation sign out method"""
+    def get(self):
+        session.clear()
+        response = {'is_logout': True}
+        return make_response(jsonify(response), status.HTTP_200_OK)
 
 
 class ProfileResource(Resource):
@@ -91,3 +148,4 @@ class DeleteResource(Resource):
 
 api.add_resource(ProfileResource, '/profile')
 api.add_resource(DeleteResource, '/delete')
+api.add_resource(ResetPasswordRequestResource, '/reset-password')
