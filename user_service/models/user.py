@@ -3,13 +3,19 @@ from user_service import db
 from flask_security import UserMixin
 import datetime
 from user_service import bcrypt
+from flask import session
+
 
 class User(db.Model, UserMixin):
-    """"""
     """ Represent database table user by class
     :param: integer id for user
     :param: string name for user
     :param: string email for user
+    :param: string password for user
+    :param: string first name for user
+    :param: string last name for user
+    :param: string path to user image file
+    :param:
     """
     __tablename__ = 'users'
 
@@ -35,3 +41,7 @@ class User(db.Model, UserMixin):
     @classmethod
     def find_by_user_name(cls,user_name):
         return cls.query.filter_by(user_name=user_name).first()
+
+    @classmethod
+    def reset_password(cls):
+        pass
