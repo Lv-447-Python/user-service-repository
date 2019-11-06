@@ -2,9 +2,8 @@
 from user_service import db
 from flask_security import UserMixin
 import datetime
-from user_service import bcrypt
-from flask import session
-
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from user_service import app
 
 class User(db.Model, UserMixin):
     """ Represent database table user by class
@@ -41,5 +40,15 @@ class User(db.Model, UserMixin):
     def find_by_user_name(cls,user_name):
         return cls.query.filter_by(user_name=user_name).first()
 
-    def create_new_password(self):
-        return bcrypt.generate_password_hash(self.user_name,10)
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_name': self.user_name}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_name = s.loads(token)['user_name']
+        except:
+            return None
+        return User.query.get(user_name)
