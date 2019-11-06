@@ -15,17 +15,16 @@ class User(db.Model, UserMixin):
     :param: string first name for user
     :param: string last name for user
     :param: string path to user image file
-    :param:
     """
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(15), nullable=False, unique=True)
-    user_email = db.Column(db.String(15), nullable=False, unique=True)
+    user_name = db.Column(db.String(25), nullable=False, unique=True)
+    user_email = db.Column(db.String(35), nullable=False, unique=True)
     user_password = db.Column(db.String(255), nullable=False)
-    user_first_name = db.Column(db.String(15), nullable=False)
-    user_last_name = db.Column(db.String(15), nullable=False)
-    user_image_file = db.Column(db.String(15), nullable=False)
+    user_first_name = db.Column(db.String(25), nullable=False)
+    user_last_name = db.Column(db.String(25), nullable=False)
+    user_image_file = db.Column(db.String(25), nullable=False)
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
 
@@ -42,6 +41,5 @@ class User(db.Model, UserMixin):
     def find_by_user_name(cls,user_name):
         return cls.query.filter_by(user_name=user_name).first()
 
-    @classmethod
-    def reset_password(cls):
-        pass
+    def create_new_password(self):
+        return bcrypt.generate_password_hash(self.user_name,10)
