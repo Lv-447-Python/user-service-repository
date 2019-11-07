@@ -2,8 +2,8 @@
 from user_service import db
 from flask_security import UserMixin
 import datetime
-from user_service import bcrypt
-from flask import session
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from user_service import app
 
 
 class User(db.Model, UserMixin):
@@ -15,17 +15,16 @@ class User(db.Model, UserMixin):
     :param: string first name for user
     :param: string last name for user
     :param: string path to user image file
-    :param:
     """
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(15), nullable=False, unique=True)
-    user_email = db.Column(db.String(15), nullable=False, unique=True)
+    user_name = db.Column(db.String(25), nullable=False, unique=True)
+    user_email = db.Column(db.String(35), nullable=False, unique=True)
     user_password = db.Column(db.String(255), nullable=False)
-    user_first_name = db.Column(db.String(15), nullable=False)
-    user_last_name = db.Column(db.String(15), nullable=False)
-    user_image_file = db.Column(db.String(15), nullable=False)
+    user_first_name = db.Column(db.String(25), nullable=False)
+    user_last_name = db.Column(db.String(25), nullable=False)
+    user_image_file = db.Column(db.String(25), nullable=False)
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
 
@@ -42,6 +41,15 @@ class User(db.Model, UserMixin):
     def find_by_user_name(cls,user_name):
         return cls.query.filter_by(user_name=user_name).first()
 
-    @classmethod
-    def reset_password(cls):
-        pass
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_name': self.user_name}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_name = s.loads(token)['user_name']
+        except:
+            return None
+        return User.query.filter_by(user_name=user_name).first()
