@@ -5,6 +5,7 @@ import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from user_service import app
 
+
 class User(db.Model, UserMixin):
     """ Represent database table user by class
     :param: integer id for user
@@ -51,4 +52,4 @@ class User(db.Model, UserMixin):
             user_name = s.loads(token)['user_name']
         except:
             return None
-        return User.query.get(user_name)
+        return User.query.filter_by(user_name=user_name).first()

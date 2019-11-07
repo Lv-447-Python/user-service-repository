@@ -1,7 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import create_access_token, decode_token
 from sqlalchemy.orm.exc import UnmappedInstanceError
-
 from user_service import db
 from user_service import api
 from user_service.models.user import User
@@ -12,10 +11,7 @@ from user_service import bcrypt
 from flask_api import status
 from marshmallow import ValidationError
 from user_service import mail
-from user_service import app
 from flask_mail import Message
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-
 
 USER_SCHEMA = UserSchema()
 
@@ -61,9 +57,31 @@ class ResetPasswordRequestResource(Resource):
         except:
             return status.HTTP_408_REQUEST_TIMEOUT
 
-
-class SetPasswordResource(Resource):
-    pass
+    def put(self):
+        try:
+            token = request.args.get('token')
+        except:
+            return status.HTTP_504_GATEWAY_TIMEOUT
+        try:
+            user = User.verify_reset_token(token)
+            data = request.json
+            user_password = data['user_password']
+            user_password_confirm = data['user_password_confirm']
+            try:
+                if user_password == user_password_confirm:
+                    try:
+                        user.user_password = bcrypt.generate_password_hash(user_password,10)
+                        db.session.commit()
+                        return status.HTTP_200_OK
+                    except IntegrityError:
+                        db.session.rollback()
+                        return status.HTTP_400_BAD_REQUEST
+                else:
+                    raise ValidationError
+            except:
+                return status.HTTP_400_BAD_REQUEST
+        except:
+            return status.HTTP_400_BAD_REQUEST
 
 
 # TODO: IF ONLY BUTTON LOGOUT CHANGE TO POST METHOD
