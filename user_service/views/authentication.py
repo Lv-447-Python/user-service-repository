@@ -88,7 +88,7 @@ class ProfileResource(Resource):
     def get(self):
         try:
             access = session[JWT_TOKEN]
-        except IndentationError:
+        except KeyError:
             return status.HTTP_401_UNAUTHORIZED
         try:
             user_info = decode_token(access)
@@ -154,9 +154,61 @@ class DeleteResource(Resource):
         except UnmappedInstanceError:
             return status.HTTP_400_BAD_REQUEST
 
-api.add_resource(RegisterResource, '/register')
-api.add_resource(CreateResource, '/create')
-api.add_resource(LoginResource, '/login')
+
+class RegisterResource(Resource):
+    def post(self):
+        try:
+            data = USER_SCHEMA.load(request.json)
+        except:
+            return status.HTTP_400_BAD_REQUEST
+        try:
+            is_exists = db.session.query(User.id).filter_by(user_name=data['user_name']).scalar() is not None
+            if not is_exists:
+                try:
+                    data['user_password'] = bcrypt.generate_password_hash(data['user_password'],round(10)).decode('utf-8')
+                    new_user = User(**data)
+                    try:
+                        db.session.add(new_user)
+                        db.session.commit()
+                    except IntegrityError:
+                        db.session.rollback()
+                except ValueError:
+                    return status.HTTP_400_BAD_REQUEST
+            else:
+                return status.HTTP_409_CONFLICT
+        except:
+            return status.HTTP_400_BAD_REQUEST
+        return status.HTTP_200_OK
+
+# TODO: IF ONLY BUTTON LOGOUT CHANGE TO POST METHOD
+class LogoutResource(Resource):
+    """Implementation sign out method"""
+    def get(self):
+        session.clear()
+        response = {'is_logout': True}
+        return make_response(jsonify(response), status.HTTP_200_OK)
+
+class LoginResource(Resource):
+    def post(self):
+            try:
+                data = USER_SCHEMA.load(request.json)
+                current_user = User.find_by_user_name(data['user_name'])
+                if bcrypt.check_password_hash(current_user.user_password,data['user_password']):
+                    try:
+                        session.permanent = True
+                        access_token = create_access_token(identity=current_user.user_name, expires_delta=False)
+                        session[JWT_TOKEN] = access_token
+                        return status.HTTP_200_OK
+                    except:
+                        return status.HTTP_400_BAD_REQUEST
+                else:
+                    return status.HTTP_400_BAD_REQUEST
+            except:
+                return status.HTTP_400_BAD_REQUEST
+
+api.add_resource(LogoutResource, '/logout')
 api.add_resource(ProfileResource, '/profile')
 api.add_resource(DeleteResource, '/delete')
 api.add_resource(ResetPasswordRequestResource, '/reset-password')
+api.add_resource(RegisterResource, '/register')
+api.add_resource(LoginResource, '/login')
