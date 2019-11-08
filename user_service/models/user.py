@@ -28,23 +28,20 @@ class User(db.Model, UserMixin):
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
 
-    def __init__(self, user_name, user_email, user_password, user_first_name,
-                 user_last_name, user_image_file):
-        self.user_name = user_name
-        self.user_email = user_email
-        self.user_password = user_password
-        self.user_first_name = user_first_name
-        self.user_last_name = user_last_name
-        self.user_image_file = user_image_file
-
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+#kwargs
     @classmethod
     def find_by_user_name(cls,user_name):
         return cls.query.filter_by(user_name=user_name).first()
-
+    @classmethod
+    def find_user(cls,**kwargs):
+        return cls.query.filter_by(kwargs=kwargs).first()
+#go to utils
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
         return s.dumps({'user_name': self.user_name}).decode('utf-8')
-
+#go to utils
     @staticmethod
     def verify_reset_token(token):
         s = Serializer(app.config['SECRET_KEY'])

@@ -70,7 +70,7 @@ class ResetPasswordRequestResource(Resource):
             try:
                 if user_password == user_password_confirm:
                     try:
-                        user.user_password = bcrypt.generate_password_hash(user_password,10)
+                        user.user_password = bcrypt.generate_password_hash(user_password,10).decode('utf-8')
                         db.session.commit()
                         return status.HTTP_200_OK
                     except IntegrityError:
@@ -82,16 +82,6 @@ class ResetPasswordRequestResource(Resource):
                 return status.HTTP_400_BAD_REQUEST
         except:
             return status.HTTP_400_BAD_REQUEST
-
-
-# TODO: IF ONLY BUTTON LOGOUT CHANGE TO POST METHOD
-class LogoutResource(Resource):
-    """Implementation sign out method"""
-    def get(self):
-        session.clear()
-        response = {'is_logout': True}
-        return make_response(jsonify(response), status.HTTP_200_OK)
-
 
 class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
@@ -122,9 +112,10 @@ class ProfileResource(Resource):
             user_info = decode_token(access)
             user_name = user_info['identity']
             try:
+                #Make an unpacking?
                 current_user = User.find_by_user_name(user_name)
                 current_user.user_email = new_user['user_email']
-                current_user.user_password = bcrypt.generate_password_hash(new_user['user_password'])
+                current_user.user_password = bcrypt.generate_password_hash(new_user['user_password']).decode('utf-8')
                 current_user.user_first_name = new_user['user_first_name']
                 current_user.user_last_name = new_user['user_last_name']
                 current_user.user_image_file = new_user['user_image_file']
@@ -163,7 +154,9 @@ class DeleteResource(Resource):
         except UnmappedInstanceError:
             return status.HTTP_400_BAD_REQUEST
 
-
+api.add_resource(RegisterResource, '/register')
+api.add_resource(CreateResource, '/create')
+api.add_resource(LoginResource, '/login')
 api.add_resource(ProfileResource, '/profile')
 api.add_resource(DeleteResource, '/delete')
 api.add_resource(ResetPasswordRequestResource, '/reset-password')
