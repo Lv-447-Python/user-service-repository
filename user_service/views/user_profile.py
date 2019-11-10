@@ -108,12 +108,12 @@ class ProfileResource(Resource):
                 except ValidationError as error:
                     return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
             else:
-                response_object = {
-                    'Error': 'This user already exists'
-                }
-                return make_response(response_object, status.HTTP_409_CONFLICT)
-        except:
-            return status.HTTP_400_BAD_REQUEST
+                raise ValueError
+        except ValueError:
+            response_object = {
+                'Error': 'This user already exists'
+            }
+            return make_response(response_object, status.HTTP_409_CONFLICT)
         try:
             db.session.add(new_user)
             db.session.commit()
