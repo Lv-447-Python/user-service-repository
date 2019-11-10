@@ -27,7 +27,7 @@ class User(db.Model, UserMixin):
     user_image_file = db.Column(db.String(25), nullable=False)
     user_registration_data = db.Column(db.DateTime(), nullable=False,
                                        default=datetime.datetime.now())
-    
+
     @classmethod
     def find_user(cls,**kwargs):
         return cls.query.filter_by(**kwargs).first()
