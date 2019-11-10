@@ -2,8 +2,7 @@
 from user_service import db
 from flask_security import UserMixin
 import datetime
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from user_service import app
+from marshmallow import ValidationError
 
 
 class User(db.Model, UserMixin):

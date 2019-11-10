@@ -1,4 +1,6 @@
 from flask_jwt_extended import create_access_token
+from marshmallow import ValidationError
+
 from user_service import api
 from user_service.models.user import User
 from user_service.serializers.user_schema import LoginSchema
@@ -28,18 +30,24 @@ class LoginResource(Resource):
             try:
                 data = LOGIN_SCHEMA.load(request.json)
                 current_user = User.find_user(user_name=data['user_name'])
-                if bcrypt.check_password_hash(current_user.user_password,data['user_password']):
-                    try:
-                        session.permanent = True
-                        access_token = create_access_token(identity=current_user.user_name, expires_delta=False)
-                        session[JWT_TOKEN] = access_token
-                        return status.HTTP_200_OK
-                    except:
-                        return status.HTTP_400_BAD_REQUEST
-                else:
-                    return status.HTTP_400_BAD_REQUEST
+            except ValidationError as error:
+                return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+            try:
+                bcrypt.check_password_hash(current_user.user_password, data['user_password'])
+            except AttributeError:
+                response_object = {
+                    'Error': 'Account not found'
+                }
+                return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+            try:
+                session.permanent = True
+                access_token = create_access_token(identity=current_user.id, expires_delta=False)
+                session[JWT_TOKEN] = access_token
+                return status.HTTP_200_OK
+            #Which error
             except:
                 return status.HTTP_400_BAD_REQUEST
+
 
 api.add_resource(LogoutResource, '/logout')
 api.add_resource(LoginResource, '/login')
