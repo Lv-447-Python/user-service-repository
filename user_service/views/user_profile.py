@@ -50,19 +50,25 @@ class ResetPasswordRequestResource(Resource):
             data = request.json
             user_email = data['user_email']
             print(user_email)
+        except ValidationError as error:
+            return make_response(jsonify(error.messages), status.HTTP_408_REQUEST_TIMEOUT)
+            
+        try:
+            user = User.query.filter_by(user_email=user_email).scalar()
+            token = get_reset_token(user)
             try:
-                user = User.query.filter_by(user_email=user_email).scalar()
-                token = get_reset_token(user)
-                try:
-                    send_email(user_email, token)
-                    return status.HTTP_200_OK
-                except ValueError:
-                    return status.HTTP_401_UNAUTHORIZED
-            except:
-                #Incorrect password
-                return status.HTTP_405_METHOD_NOT_ALLOWED
+                send_email(user_email, token)
+                return status.HTTP_200_OK
+            except ValueError:
+                response_object = {
+                'Error': 'No user found'
+                }
+                return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
+
         except:
-            return status.HTTP_408_REQUEST_TIMEOUT
+            #Incorrect password
+            return status.HTTP_405_METHOD_NOT_ALLOWED
+
 
     def put(self):
         try:
@@ -74,21 +80,26 @@ class ResetPasswordRequestResource(Resource):
             data = request.json
             user_password = data['user_password']
             user_password_confirm = data['user_password_confirm']
-            try:
-                if user_password == user_password_confirm:
-                    try:
-                        user.user_password = bcrypt.generate_password_hash(user_password, 10).decode('utf-8')
-                        db.session.commit()
-                        return status.HTTP_200_OK
-                    except IntegrityError:
-                        db.session.rollback()
-                        return status.HTTP_400_BAD_REQUEST
-                else:
-                    raise ValidationError
-            except:
-                return status.HTTP_400_BAD_REQUEST
+        except ValidationError as error:
+            return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+#HOW TO FIX THIS TRY BLOCK
+        try:
+            if user_password == user_password_confirm:
+                try:
+                    user.user_password = bcrypt.generate_password_hash(user_password, 10).decode('utf-8')
+                    db.session.commit()
+                    return status.HTTP_200_OK
+                except IntegrityError:
+                    db.session.rollback()
+                    response_object = {
+                        'Error': 'Database error'
+                    }
+                    return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
+            else:
+                raise ValidationError
         except:
             return status.HTTP_400_BAD_REQUEST
+
 
 
 class ProfileResource(Resource):
@@ -126,7 +137,7 @@ class ProfileResource(Resource):
             response_object = {
                 'Error': 'Database error'
             }
-            make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
+            return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
 
     def get(self):
         try:
