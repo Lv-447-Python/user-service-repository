@@ -5,6 +5,7 @@ import datetime
 from marshmallow import ValidationError
 
 
+
 class User(db.Model, UserMixin):
     """ Represent database table user by class
     :param: integer id for user

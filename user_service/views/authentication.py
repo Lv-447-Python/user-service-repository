@@ -18,8 +18,10 @@ JWT_TOKEN = 'jwt_token'
 class LogoutResource(Resource):
     """Implementation sign out method"""
     def get(self):
-        session.clear()
-        response = {'is_logout': True}
+        # session.clear()
+        response = {'is_logout': True,
+                    'session': str(session)
+                    }
         return make_response(jsonify(response), status.HTTP_200_OK)
 
 
