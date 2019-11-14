@@ -8,7 +8,7 @@ from user_service.models.user import User
 from user_service.serializers.user_schema import UserSchema, LoginSchema
 from flask import jsonify, request, session, make_response
 from flask_restful import Resource
-from user_service import bcrypt
+from user_service import BCRYPT
 from flask_api import status
 from marshmallow import ValidationError
 from user_service.utils.user_utils import get_reset_token, verify_reset_token
@@ -64,11 +64,9 @@ class ResetPasswordRequestResource(Resource):
                 'Error': 'No user found'
                 }
                 return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-
         except:
             #Incorrect password
             return status.HTTP_405_METHOD_NOT_ALLOWED
-
 
     def put(self):
         try:
@@ -86,7 +84,7 @@ class ResetPasswordRequestResource(Resource):
         try:
             if user_password == user_password_confirm:
                 try:
-                    user.user_password = bcrypt.generate_password_hash(user_password, 10).decode('utf-8')
+                    user.user_password = BCRYPT.generate_password_hash(user_password, 10).decode('utf-8')
                     db.session.commit()
                     return status.HTTP_200_OK
                 except IntegrityError:
@@ -101,21 +99,19 @@ class ResetPasswordRequestResource(Resource):
             return status.HTTP_400_BAD_REQUEST
 
 
-
 class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
     def post(self):
         try:
-            data = USER_SCHEMA.load(request.json)
+            new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         # how to fix this try-catch
         try:
-            is_exists = db.session.query(User.id).filter_by(user_name=data['user_name']).scalar() is not None
+            is_exists = db.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
             if not is_exists:
                 try:
-                    data['user_password'] = bcrypt.generate_password_hash(data['user_password'], round(10)).decode('utf-8')
-                    new_user = User(**data)
+                    new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode('utf-8')
                 except ValidationError as error:
                     return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
             else:
@@ -180,7 +176,7 @@ class ProfileResource(Resource):
                 current_user = User.find_user(id=user_id)
                 if current_user is not None:
                     current_user.user_email = new_user['user_email']
-                    current_user.user_password = bcrypt.generate_password_hash(new_user['user_password']).decode('utf-8')
+                    current_user.user_password = BCRYPT.generate_password_hash(new_user['user_password']).decode('utf-8')
                     current_user.user_first_name = new_user['user_first_name']
                     current_user.user_last_name = new_user['user_last_name']
                     current_user.user_image_file = new_user['user_image_file']
@@ -191,7 +187,7 @@ class ProfileResource(Resource):
                     'Error': 'This user doesn`t exists'
                 }
                 return make_response(response_object,status.HTTP_400_BAD_REQUEST)
-        except KeyError as error:
+        except KeyError:
 
             response_object = {
                 'Error': 'Session has been expired'
@@ -236,6 +232,7 @@ class ProfileResource(Resource):
             }
             db.session.rollback()
             return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+
 
 api.add_resource(ProfileResource, '/profile')
 api.add_resource(ResetPasswordRequestResource, '/reset-password')
