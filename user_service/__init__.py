@@ -1,3 +1,4 @@
+"""Initial file with main settings"""
 # import POSTGRES as POSTGRES
 import smtplib
 
@@ -6,38 +7,37 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate,MigrateCommand
+from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 
-app = Flask(__name__)
-api = Api(app)
+APP = Flask(__name__)
+API = Api(APP)
 
-CORS(app)
+CORS(APP, supports_credentials=True)
 
-bcrypt = Bcrypt(app)
+BCRYPT = Bcrypt(APP)
 
-jwt = JWTManager(app)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:snoopy1@127.0.0.1:5432/UserDB'
-app.config['SECRET_KEY'] = 'jwt-secret-string'
-app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME']= 'testingforserve@gmail.com'
-app.config['MAIL_PASSWORD'] = 'StrongPassword98'
+JWT = JWTManager(APP)
+APP.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:snoopy1@127.0.0.1:5432/UserDB'
+APP.config['SECRET_KEY'] = 'jwt-secret-string'
+APP.config['JWT_TOKEN_LOCATION'] = ['cookies']
 
 
-mail = Mail(app)
+APP.config['MAIL_SERVER'] = 'smtp.gmail.com'
+APP.config['MAIL_PORT'] = 465
+APP.config['MAIL_USE_SSL'] = True
+APP.config['MAIL_USERNAME'] = 'testingforserve@gmail.com'
+APP.config['MAIL_PASSWORD'] = 'StrongPassword98'
 
-db = SQLAlchemy(app)
-marshmallow = Marshmallow(app)
-migrate = Migrate(app, db)
-manager = Manager(app)
-manager.add_command('db', MigrateCommand)
-from user_service.models.user import User
+
+MAIL = Mail(APP)
+
+DB = SQLAlchemy(APP)
+MARSHMALLOW = Marshmallow(APP)
+MIGRATE = Migrate(APP, DB)
+MANAGER = Manager(APP)
+MANAGER.add_command('db', MigrateCommand)

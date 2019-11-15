@@ -1,1 +1,1 @@
-from user_service import app
+"""Configs for user service"""

@@ -1,19 +1,19 @@
+"""User profile resource view"""
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import decode_token, create_access_token
 from sqlalchemy.orm import exc
-from sqlalchemy.orm.exc import UnmappedInstanceError
-from user_service import db
-from user_service import api
-from user_service.models.user import User
-from user_service.serializers.user_schema import UserSchema, LoginSchema
 from flask import jsonify, request, session, make_response
 from flask_restful import Resource
-from user_service import bcrypt
 from flask_api import status
 from marshmallow import ValidationError
-from user_service.utils.user_utils import get_reset_token, verify_reset_token
-from user_service import mail
 from flask_mail import Message
+from user_service import DB
+from user_service import API
+from user_service.models.user import User
+from user_service.serializers.user_schema import UserSchema, LoginSchema
+from user_service import BCRYPT
+from user_service.utils.user_utils import get_reset_token, verify_reset_token
+from user_service import MAIL
 
 USER_SCHEMA = UserSchema(exclude=['id', 'user_registration_data'])
 
@@ -33,11 +33,13 @@ def send_email(user_email, token):
         status
     """
     try:
-        msg = Message("Hello, you tried to reset password", sender='testingforserve@gmail.com', recipients=[user_email])
-        msg.body = f'''For reset your password just follow this link: {api.url_for(ResetPasswordRequestResource, token=token, _external=True)} 
+        msg = Message("Hello, you tried to reset password", sender='testingforserve@gmail.com',
+                      recipients=[user_email])
+        msg.body = f'''For reset your password just follow this link: {API.url_for(ResetPasswordRequestResource, 
+        token=token, _external=True)} 
         If you didn`t reset your password just ignore this message'''
-        mail.send(msg)
-    except:
+        MAIL.send(msg)
+    except RuntimeError:
         return status.HTTP_400_BAD_REQUEST
     return status.HTTP_200_OK
 
@@ -46,13 +48,12 @@ def send_email(user_email, token):
 class ResetPasswordRequestResource(Resource):
     """Implementation of reset password request on mail"""
     def post(self):
+        """Post method for reset password"""
         try:
             data = request.json
             user_email = data['user_email']
-            print(user_email)
         except ValidationError as error:
             return make_response(jsonify(error.messages), status.HTTP_408_REQUEST_TIMEOUT)
-            
         try:
             user = User.query.filter_by(user_email=user_email).scalar()
             token = get_reset_token(user)
@@ -61,19 +62,18 @@ class ResetPasswordRequestResource(Resource):
                 return status.HTTP_200_OK
             except ValueError:
                 response_object = {
-                'Error': 'No user found'
+                    'Error': 'No user found'
                 }
                 return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-
         except:
-            #Incorrect password
+            # Incorrect password
             return status.HTTP_405_METHOD_NOT_ALLOWED
 
-
     def put(self):
+        """Put method for edit profile"""
         try:
             token = request.args.get('token')
-        except:
+        except TimeoutError:
             return status.HTTP_504_GATEWAY_TIMEOUT
         try:
             user = verify_reset_token(token)
@@ -82,40 +82,42 @@ class ResetPasswordRequestResource(Resource):
             user_password_confirm = data['user_password_confirm']
         except ValidationError as error:
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-#HOW TO FIX THIS TRY BLOCK
+        # HOW TO FIX THIS TRY BLOCK
         try:
             if user_password == user_password_confirm:
                 try:
-                    user.user_password = bcrypt.generate_password_hash(user_password, 10).decode('utf-8')
-                    db.session.commit()
+                    user.user_password = BCRYPT.generate_password_hash(user_password, 10).decode('utf-8')
+                    DB.session.commit()
                     return status.HTTP_200_OK
                 except IntegrityError:
-                    db.session.rollback()
+                    DB.session.rollback()
                     response_object = {
                         'Error': 'Database error'
                     }
                     return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
             else:
                 raise ValidationError
-        except:
+        except ValidationError:
             return status.HTTP_400_BAD_REQUEST
-
 
 
 class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
+
     def post(self):
+        """Post method for create an user"""
         try:
-            data = USER_SCHEMA.load(request.json)
+            new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
-            return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+            return make_response(jsonify(error.messages),
+                                 status.HTTP_400_BAD_REQUEST)
         # how to fix this try-catch
         try:
-            is_exists = db.session.query(User.id).filter_by(user_name=data['user_name']).scalar() is not None
+            is_exists = DB.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
             if not is_exists:
                 try:
-                    data['user_password'] = bcrypt.generate_password_hash(data['user_password'], round(10)).decode('utf-8')
-                    new_user = User(**data)
+                    new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode(
+                        'utf-8')
                 except ValidationError as error:
                     return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
             else:
@@ -126,20 +128,21 @@ class ProfileResource(Resource):
             }
             return make_response(response_object, status.HTTP_409_CONFLICT)
         try:
-            db.session.add(new_user)
-            db.session.commit()
+            DB.session.add(new_user)
+            DB.session.commit()
             session.permanent = True
             access_token = create_access_token(identity=new_user.id, expires_delta=False)
             session[JWT_TOKEN] = access_token
             return status.HTTP_200_OK
         except IntegrityError:
-            db.session.rollback()
+            DB.session.rollback()
             response_object = {
                 'Error': 'Database error'
             }
             return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
 
     def get(self):
+        """Get method for return user data"""
         try:
             access = session[JWT_TOKEN]
         except KeyError:
@@ -149,7 +152,6 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         try:
             user_info = decode_token(access)
-            user_info = user_info
             user_id = user_info['identity']
             current_user = User.find_user(id=user_id)
             if current_user is not None:
@@ -164,7 +166,7 @@ class ProfileResource(Resource):
             response_object = {
                 'Error': "This user doesn`t exists"
             }
-            return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def put(self):
         try:
@@ -175,40 +177,41 @@ class ProfileResource(Resource):
             access = session[JWT_TOKEN]
             user_info = decode_token(access)
             user_id = user_info['identity']
-            try:
-                # Make an unpacking?
-                current_user = User.find_user(id=user_id)
-                if current_user is not None:
-                    current_user.user_email = new_user['user_email']
-                    current_user.user_password = bcrypt.generate_password_hash(new_user['user_password']).decode('utf-8')
-                    current_user.user_first_name = new_user['user_first_name']
-                    current_user.user_last_name = new_user['user_last_name']
-                    current_user.user_image_file = new_user['user_image_file']
-                else:
-                    raise ValueError
-            except ValueError:
-                response_object = {
-                    'Error': 'This user doesn`t exists'
-                }
-                return make_response(response_object,status.HTTP_400_BAD_REQUEST)
-        except KeyError as error:
+        except KeyError:
 
             response_object = {
                 'Error': 'Session has been expired'
             }
-            return make_response(response_object,status.HTTP_401_UNAUTHORIZED)
+            return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         try:
-            db.session.commit()
+            # Make an unpacking?
+            current_user = User.find_user(id=user_id)
+            if current_user is not None:
+                current_user.user_email = new_user['user_email']
+                current_user.user_password = BCRYPT.generate_password_hash(new_user['user_password']).decode(
+                    'utf-8')
+                current_user.user_first_name = new_user['user_first_name']
+                current_user.user_last_name = new_user['user_last_name']
+                current_user.user_image_file = new_user['user_image_file']
+            else:
+                raise ValueError
+        except ValueError:
+            response_object = {
+                'Error': 'This user doesn`t exists'
+            }
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+        try:
+            DB.session.commit()
             return status.HTTP_200_OK
         except IntegrityError:
-            db.session.rollback()
+            DB.session.rollback()
             response_object = {
                 'Error': 'Database error'
             }
-            return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
-    """Implementation of method delete user account"""
     def delete(self):
+        """Implementation of method delete user account"""
         try:
             access = session[JWT_TOKEN]
         except KeyError:
@@ -220,22 +223,23 @@ class ProfileResource(Resource):
             user_info = decode_token(access)
             user_id = user_info['identity']
             current_user = User.find_user(id=user_id)
-            db.session.delete(current_user)
+            DB.session.delete(current_user)
         except exc.UnmappedInstanceError:
             response_object = {
                 'Error': 'This user doesn`t exists'
             }
-            return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
         try:
-            db.session.commit()
+            DB.session.commit()
             session.clear()
             return status.HTTP_200_OK
         except IntegrityError:
             response_object = {
                 'Error': 'Database error'
             }
-            db.session.rollback()
-            return make_response(response_object,status.HTTP_400_BAD_REQUEST)
+            DB.session.rollback()
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
-api.add_resource(ProfileResource, '/profile')
-api.add_resource(ResetPasswordRequestResource, '/reset-password')
+
+API.add_resource(ProfileResource, '/profile')
+API.add_resource(ResetPasswordRequestResource, '/reset-password')

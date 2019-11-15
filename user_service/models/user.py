@@ -1,12 +1,11 @@
 """Model for user-service"""
-from user_service import db
-from flask_security import UserMixin
 import datetime
-from marshmallow import ValidationError
+from flask_security import UserMixin
+from sqlalchemy import Column, Integer, String, DateTime
+from user_service import DB
 
 
-
-class User(db.Model, UserMixin):
+class User(DB.Model, UserMixin):
     """ Represent database table user by class
     :param: integer id for user
     :param: string name for user
@@ -18,16 +17,23 @@ class User(db.Model, UserMixin):
     """
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(25), nullable=False, unique=True)
-    user_email = db.Column(db.String(35), nullable=False, unique=True)
-    user_password = db.Column(db.String(255), nullable=False)
-    user_first_name = db.Column(db.String(25), nullable=False)
-    user_last_name = db.Column(db.String(25), nullable=False)
-    user_image_file = db.Column(db.String(25), nullable=False)
-    user_registration_data = db.Column(db.DateTime(), nullable=False,
-                                       default=datetime.datetime.now())
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_name = Column(String(25), nullable=False, unique=True)
+    user_email = Column(String(35), nullable=False, unique=True)
+    user_password = Column(String(255), nullable=False)
+    user_first_name = Column(String(25), nullable=False)
+    user_last_name = Column(String(25), nullable=False)
+    user_image_file = Column(String(25), nullable=False)
+    user_registration_data = Column(DateTime, nullable=False, default=datetime.datetime.now())
 
     @classmethod
-    def find_user(cls,**kwargs):
+    def find_user(cls, **kwargs):
+        """
+        Function for find user by some argument
+        Args:
+            **kwargs:
+
+        Returns:
+            instance of user or None if user not found
+        """
         return cls.query.filter_by(**kwargs).first()
