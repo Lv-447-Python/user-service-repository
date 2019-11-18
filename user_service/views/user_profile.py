@@ -187,12 +187,12 @@ class ProfileResource(Resource):
             # Make an unpacking?
             current_user = User.find_user(id=user_id)
             if current_user is not None:
-                current_user.user_email = new_user['user_email']
-                current_user.user_password = BCRYPT.generate_password_hash(new_user['user_password']).decode(
+                current_user.user_email = new_user.user_email
+                current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
                     'utf-8')
-                current_user.user_first_name = new_user['user_first_name']
-                current_user.user_last_name = new_user['user_last_name']
-                current_user.user_image_file = new_user['user_image_file']
+                current_user.user_first_name = new_user.user_first_name
+                current_user.user_last_name = new_user.user_last_name
+                current_user.user_image_file = new_user.user_image_file
             else:
                 raise ValueError
         except ValueError:
