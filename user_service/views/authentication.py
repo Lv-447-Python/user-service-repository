@@ -38,10 +38,12 @@ class LoginResource(Resource):
         except ValidationError as error:
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         try:
-            BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
+            check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
+            if not check_password:
+                raise AttributeError
         except AttributeError:
             response_object = {
-                'Error': 'Account not found'
+                'Error': 'Your password or login is invalid'
             }
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
