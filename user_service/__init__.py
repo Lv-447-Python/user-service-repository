@@ -22,7 +22,7 @@ BCRYPT = Bcrypt(APP)
 
 JWT = JWTManager(APP)
 APP.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:snoopy1@127.0.0.1:5432/UserDB'
+APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:1234@127.0.0.1:5432/userdb'
 APP.config['SECRET_KEY'] = 'jwt-secret-string'
 APP.config['JWT_TOKEN_LOCATION'] = ['cookies']
 
@@ -41,3 +41,6 @@ MARSHMALLOW = Marshmallow(APP)
 MIGRATE = Migrate(APP, DB)
 MANAGER = Manager(APP)
 MANAGER.add_command('db', MigrateCommand)
+
+from user_service.models.user import User
+

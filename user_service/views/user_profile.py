@@ -17,7 +17,7 @@ from user_service import MAIL
 
 USER_SCHEMA = UserSchema(exclude=['id', 'user_registration_data'])
 
-LOGIN_SCHEMA = LoginSchema()
+# LOGIN_SCHEMA = LoginSchema()
 
 JWT_TOKEN = 'jwt_token'
 
@@ -33,11 +33,11 @@ def send_email(user_email, token):
         status
     """
     try:
-        msg = Message("Hello, you tried to reset password", sender='testingforserve@gmail.com',
+        msg = Message("Hello, you tried to reset password!", sender='testingforserve@gmail.com',
                       recipients=[user_email])
-        msg.body = f'''For reset your password just follow this link: {API.url_for(ResetPasswordRequestResource, 
+        msg.body = f'''To reset your password just follow this link: {API.url_for(ResetPasswordRequestResource, 
         token=token, _external=True)} 
-        If you didn`t reset your password just ignore this message'''
+        If you haven`t tried to reset your password just ignore this message'''
         MAIL.send(msg)
     except RuntimeError:
         return status.HTTP_400_BAD_REQUEST
@@ -53,7 +53,7 @@ class ResetPasswordRequestResource(Resource):
             data = request.json
             user_email = data['user_email']
         except ValidationError as error:
-            return make_response(jsonify(error.messages), status.HTTP_408_REQUEST_TIMEOUT)
+            return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         try:
             user = User.query.filter_by(user_email=user_email).scalar()
             token = get_reset_token(user)
@@ -67,7 +67,7 @@ class ResetPasswordRequestResource(Resource):
                 return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         except:
             # Incorrect password
-            return status.HTTP_405_METHOD_NOT_ALLOWED
+            return status.HTTP_400_BAD_REQUEST
 
     def put(self):
         """Put method for edit profile"""
@@ -187,12 +187,12 @@ class ProfileResource(Resource):
             # Make an unpacking?
             current_user = User.find_user(id=user_id)
             if current_user is not None:
-                current_user.user_email = new_user['user_email']
-                current_user.user_password = BCRYPT.generate_password_hash(new_user['user_password']).decode(
+                current_user.user_email = new_user.user_email
+                current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
                     'utf-8')
-                current_user.user_first_name = new_user['user_first_name']
-                current_user.user_last_name = new_user['user_last_name']
-                current_user.user_image_file = new_user['user_image_file']
+                current_user.user_first_name = new_user.user_first_name
+                current_user.user_last_name = new_user.user_last_name
+                current_user.user_image_file = new_user.user_image_file
             else:
                 raise ValueError
         except ValueError:
