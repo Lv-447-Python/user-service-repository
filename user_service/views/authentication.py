@@ -21,9 +21,16 @@ class LogoutResource(Resource):
     """
     def get(self):
         """Get method for sign out"""
+        try:
+            session[JWT_TOKEN]
+        except KeyError:
+            response = {
+              'Error': "User is not authorized"
+            }
+            return make_response(response,status.HTTP_400_BAD_REQUEST)
         session.clear()
         response = {
-            'is_logout': True,
+            'success': True,
         }
         return make_response(response, status.HTTP_200_OK)
 
@@ -40,8 +47,8 @@ class LoginResource(Resource):
         try:
             check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
             if not check_password:
-                raise AttributeError
-        except AttributeError:
+                raise ValueError
+        except ValueError:
             response_object = {
                 'Error': 'Your password or login is invalid'
             }

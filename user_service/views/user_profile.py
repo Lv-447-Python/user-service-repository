@@ -1,7 +1,7 @@
 """User profile resource view"""
 from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import decode_token, create_access_token
 from sqlalchemy.orm import exc
+from flask_jwt_extended import decode_token, create_access_token
 from flask import jsonify, request, session, make_response
 from flask_restful import Resource
 from flask_api import status
@@ -35,7 +35,7 @@ def send_email(user_email, token):
     try:
         msg = Message("Hello, you tried to reset password", sender='testingforserve@gmail.com',
                       recipients=[user_email])
-        msg.body = f'''For reset your password just follow this link: {API.url_for(ResetPasswordRequestResource, 
+        msg.body = f'''For reset your password just follow this link: {API.url_for(ResetPasswordRequestResource,
         token=token, _external=True)} 
         If you didn`t reset your password just ignore this message'''
         MAIL.send(msg)
@@ -65,9 +65,10 @@ class ResetPasswordRequestResource(Resource):
                     'Error': 'No user found'
                 }
                 return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        except:
+        except ValueError:
             # Incorrect password
             return status.HTTP_405_METHOD_NOT_ALLOWED
+
 
     def put(self):
         """Put method for edit profile"""
@@ -169,6 +170,7 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def put(self):
+        """Put method for editing data about user"""
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
