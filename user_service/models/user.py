@@ -3,7 +3,11 @@ import datetime
 from flask_security import UserMixin
 from sqlalchemy import Column, Integer, String, DateTime
 from user_service import DB
+import logging
+import logging.config
 
+logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
+logger = logging.getLogger('userServiceApp')
 
 class User(DB.Model, UserMixin):
     """ Represent database table user by class
@@ -36,4 +40,5 @@ class User(DB.Model, UserMixin):
         Returns:
             instance of user or None if user not found
         """
+        logger.info("Successful call of a find_user function")
         return cls.query.filter_by(**kwargs).first()
