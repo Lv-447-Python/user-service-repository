@@ -17,7 +17,6 @@ from user_service import MAIL
 
 USER_SCHEMA = UserSchema(exclude=['id', 'user_registration_data'])
 
-# LOGIN_SCHEMA = LoginSchema()
 
 JWT_TOKEN = 'jwt_token'
 
@@ -44,7 +43,6 @@ def send_email(user_email, token):
     return status.HTTP_200_OK
 
 
-# TODO: Refactoring this code with change try-except and type error avoid nested try-except
 class ResetPasswordRequestResource(Resource):
     """Implementation of reset password request on mail"""
     def post(self):
@@ -66,11 +64,10 @@ class ResetPasswordRequestResource(Resource):
                 }
                 return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         except:
-            # Incorrect password
             return status.HTTP_400_BAD_REQUEST
 
     def put(self):
-        """Put method for edit profile"""
+        """Put method for reset password"""
         try:
             token = request.args.get('token')
         except TimeoutError:
@@ -82,7 +79,6 @@ class ResetPasswordRequestResource(Resource):
             user_password_confirm = data['user_password_confirm']
         except ValidationError as error:
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-        # HOW TO FIX THIS TRY BLOCK
         try:
             if user_password == user_password_confirm:
                 try:
@@ -96,22 +92,23 @@ class ResetPasswordRequestResource(Resource):
                     }
                     return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
             else:
-                raise ValidationError
-        except ValidationError:
-            return status.HTTP_400_BAD_REQUEST
-
+                raise TypeError
+        except TypeError:
+                response_object = {
+                    'Error': 'Passwords do not match'
+                }
+                return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
 class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
 
     def post(self):
-        """Post method for create an user"""
+        """Post method for creating an user"""
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
             return make_response(jsonify(error.messages),
                                  status.HTTP_400_BAD_REQUEST)
-        # how to fix this try-catch
         try:
             is_exists = DB.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
             if not is_exists:
@@ -142,7 +139,7 @@ class ProfileResource(Resource):
             return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
 
     def get(self):
-        """Get method for return user data"""
+        """Get method for returning user data"""
         try:
             access = session[JWT_TOKEN]
         except KeyError:
@@ -169,6 +166,7 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def put(self):
+        """Put metod for editing user data"""
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
@@ -178,13 +176,11 @@ class ProfileResource(Resource):
             user_info = decode_token(access)
             user_id = user_info['identity']
         except KeyError:
-
             response_object = {
                 'Error': 'Session has been expired'
             }
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         try:
-            # Make an unpacking?
             current_user = User.find_user(id=user_id)
             if current_user is not None:
                 current_user.user_email = new_user.user_email
@@ -211,7 +207,7 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def delete(self):
-        """Implementation of method delete user account"""
+        """Delete method for deleting user account"""
         try:
             access = session[JWT_TOKEN]
         except KeyError:
