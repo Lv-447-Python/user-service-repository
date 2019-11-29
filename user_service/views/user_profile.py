@@ -263,7 +263,7 @@ class ProfileResource(Resource):
         try:
             DB.session.commit()
             session.clear()
-            logger.info("Successful request to ProfileResource, method PUT")
+            logger.info("Successful request to ProfileResource, method DELETE")
             return status.HTTP_200_OK
         except IntegrityError:
             response_object = {
