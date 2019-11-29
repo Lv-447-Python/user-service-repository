@@ -175,13 +175,14 @@ class ProfileResource(Resource):
             user_id = user_info['identity']
             current_user = User.find_user(id=user_id)
             if current_user is not None:
-                try:
-                    user_to_response = USER_SCHEMA.dump(current_user)
-                    logger.info("Successful request to ProfileResource, method GET")
-                    return make_response(jsonify(user_to_response), status.HTTP_200_OK)
-                except ValidationError as error:
-                    logger.error("Invalid data")
-                    return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+                # try:
+                user_to_response = USER_SCHEMA.dump(current_user)
+                logger.info("Successful request to ProfileResource, method GET")
+                return make_response(jsonify(user_to_response), status.HTTP_200_OK)
+                # except ValidationError as error:
+                    
+                    # logger.error("Invalid data")
+                    # return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
             else:
                 raise ValueError
 #fix this raise-except statement
@@ -263,7 +264,7 @@ class ProfileResource(Resource):
         try:
             DB.session.commit()
             session.clear()
-            logger.info("Successful request to ProfileResource, method PUT")
+            logger.info("Successful request to ProfileResource, method DELETE")
             return status.HTTP_200_OK
         except IntegrityError:
             response_object = {
