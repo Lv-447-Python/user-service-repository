@@ -8,11 +8,8 @@ from user_service.serializers.user_schema import LoginSchema
 from user_service import API
 from user_service.models.user import User
 from user_service import BCRYPT
-import logging
-import logging.config
+from user_service.configs.logger import logger
 
-logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
-logger = logging.getLogger('userServiceApp')
 
 LOGIN_SCHEMA = LoginSchema()
 

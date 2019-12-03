@@ -3,11 +3,8 @@ import datetime
 from flask_security import UserMixin
 from sqlalchemy import Column, Integer, String, DateTime
 from user_service import DB
-import logging
-import logging.config
+from user_service.configs.logger import logger
 
-logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
-logger = logging.getLogger('userServiceApp')
 
 class User(DB.Model, UserMixin):
     """ Represent database table user by class
