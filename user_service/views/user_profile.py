@@ -14,12 +14,7 @@ from user_service.serializers.user_schema import UserSchema, LoginSchema
 from user_service import BCRYPT
 from user_service.utils.user_utils import get_reset_token, verify_reset_token
 from user_service import MAIL
-import logging
-import logging.config
-
-logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
-logger = logging.getLogger('userServiceApp')
-
+from user_service.configs.logger import logger
 USER_SCHEMA = UserSchema(exclude=['id', 'user_registration_data'])
 
 JWT_TOKEN = 'jwt_token'

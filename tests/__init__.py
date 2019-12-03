@@ -1,6 +1,6 @@
 import json
-import logging
-import logging.config
+from user_service.configs.logger import logger
+
 import unittest
 
 import requests
@@ -10,11 +10,6 @@ from unittest import mock
 from user_service import APP, DB, MAIL
 # from user_service.views.user_profile import *
 
-
-logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
-logger = logging.getLogger('userServiceApp')
-
- 
 class BaseTest(unittest.TestCase):
     def setUp(self):
         APP.config['TESTING'] = True

@@ -2,11 +2,8 @@
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired
 from user_service import APP
 from user_service.models.user import User
-import logging
-import logging.config
+from user_service.configs.logger import logger
 
-logging.config.fileConfig('/Python Projects/user-service-repository/user_service/configs/logger.conf')
-logger = logging.getLogger('userServiceApp')
 
 def get_reset_token(user, expires_sec=1800):
     """
