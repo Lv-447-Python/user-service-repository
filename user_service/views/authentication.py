@@ -25,7 +25,13 @@ class LogoutResource(Resource):
     Implementation sign out method
     """
     def get(self):
-        """Get method for sign out"""
+        """
+        Get method for signing out
+        Args:
+            self
+        Returns:
+            status
+        """
         session.clear()
         response = {
             'is_logout': True,
@@ -37,7 +43,13 @@ class LogoutResource(Resource):
 class LoginResource(Resource):
     """Implementation sign in method"""
     def post(self):
-        """Post method for sign in"""
+        """
+        Post method for signing in
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             data = LOGIN_SCHEMA.load(request.json)
             current_user = User.find_user(user_name=data['user_name'])

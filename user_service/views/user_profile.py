@@ -29,8 +29,8 @@ def send_email(user_email, token):
     """
     Implementation of sending message on email
     Args:
-        user_email:
-        token:
+        user_email
+        token
 
     Returns:
         status
@@ -52,7 +52,13 @@ def send_email(user_email, token):
 class ResetPasswordRequestResource(Resource):
     """Implementation of reset password request on mail"""
     def post(self):
-        """Post method for reset password"""
+        """
+        Post method for reset password
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             data = request.json
             user_email = data['user_email']
@@ -77,7 +83,13 @@ class ResetPasswordRequestResource(Resource):
             return status.HTTP_400_BAD_REQUEST
 
     def put(self):
-        """Put method for reset password"""
+        """
+        Put method for reset password
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             token = request.args.get('token')
         except TimeoutError:
@@ -119,7 +131,13 @@ class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
 
     def post(self):
-        """Post method for creating an user"""
+        """
+        Post method for creating a user
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
@@ -161,7 +179,13 @@ class ProfileResource(Resource):
             return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
 
     def get(self):
-        """Get method for returning user data"""
+        """
+        Get method for viewing a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             access = session[JWT_TOKEN]
         except KeyError:
@@ -194,7 +218,13 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def put(self):
-        """Put metod for editing user data"""
+        """
+        Put method for editing a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
@@ -241,7 +271,13 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def delete(self):
-        """Delete method for deleting user account"""
+        """
+        Delete method for deleting a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             access = session[JWT_TOKEN]
         except KeyError:

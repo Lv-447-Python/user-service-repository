@@ -12,8 +12,8 @@ def get_reset_token(user, expires_sec=1800):
     """
     Create a specify token for reset user password
     Args:
-        user:
-        expires_sec:
+        user
+        expires_sec
 
     Returns:
         token: string
@@ -27,10 +27,10 @@ def verify_reset_token(token):
     """
     Find user by token
     Args:
-        token:
+        token
 
     Returns:
-    instance of User or None
+        instance of User or None
     """
     hash_token_password = Serializer(APP.config['SECRET_KEY'])
     try:
