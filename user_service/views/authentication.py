@@ -59,18 +59,13 @@ class LoginResource(Resource):
                 'Error': 'You didn`t enter required data'
             }
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-        try:
-            check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
-            if not check_password: #problems with password!!!
-                raise AttributeError
-#fix this raise-except statement
-        except AttributeError:
+        check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
+        if not check_password:
             response_object = {
                 'Error': 'Your password or login is invalid'
             }
             logger.error("Invalid login or password")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-
         session.permanent = True
         access_token = create_access_token(identity=current_user.id, expires_delta=False)
         session[JWT_TOKEN] = access_token
