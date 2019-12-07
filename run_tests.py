@@ -5,15 +5,15 @@ from tests import BaseTest
 from user_service.configs.logger import logger
 import unittest
 
-
-    # coverage report -m --skip-covered
+#coverage run run_tests.py
+# coverage report -m --skip-covered
 # 47 all profile 20 auth 44
 if __name__ == "__main__":
     logger.info("Running the tests...")
     unittest.main()
 
 
-# user for login test
+# # user for login test
 # 	{
 #     "user_email": "example@gmail.com",
 #     "user_first_name": "John",
@@ -22,5 +22,15 @@ if __name__ == "__main__":
 #     "user_name": "johnny123",
 #     "user_password": "test123"
 #     }
+
+	# {
+    # "user_email": "onlyfortest@gmail.com",
+    # "user_first_name": "firstnamename",
+    # "user_last_name": "lastname",
+    # "user_image_file": "path",
+    # "user_name": "name",
+    # "user_password": "password"
+    # }
+	
 	
 

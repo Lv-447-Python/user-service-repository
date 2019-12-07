@@ -51,7 +51,7 @@ class LoginResource(Resource):
             data = LOGIN_SCHEMA.load(request.json)
             current_user = User.find_user(user_name=data['user_name'])
         except ValidationError as error:
-            logger.error("Invalid data")
+            logger.error("Invalid data for login")
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         except KeyError as error:
             logger.error("Missing data")
@@ -61,7 +61,7 @@ class LoginResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
         try:
             check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
-            if not check_password:
+            if not check_password: #problems with password!!!
                 raise AttributeError
 #fix this raise-except statement
         except AttributeError:

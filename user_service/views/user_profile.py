@@ -171,7 +171,7 @@ class ProfileResource(Resource):
                 'Error': 'Database error'
             }
             logger.error("Internal database error")
-            return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
+            return make_response(jsonify(response_object), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self):
         """
@@ -189,29 +189,30 @@ class ProfileResource(Resource):
             }
             logger.error("User is unauthorized")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            user_info = decode_token(access)
-            user_id = user_info['identity']
-            current_user = User.find_user(id=user_id)
-            if current_user is not None:
-                # try:
+        # try:
+        user_info = decode_token(access)
+        user_id = user_info['identity']
+        current_user = User.find_user(id=user_id)
+        if current_user is not None:
+            try:
                 user_to_response = USER_SCHEMA.dump(current_user)
                 logger.info("Successful request to ProfileResource, method GET")
                 return make_response(jsonify(user_to_response), status.HTTP_200_OK)
-                # except ValidationError as error:
-                    
-                    # logger.error("Invalid data")
-                    # return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-            else:
-                raise ValueError
+            except ValidationError as error:
+                
+                logger.error("Invalid data")
+                return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+        else:
+            raise ValueError
 #fix this raise-except statement
-        except ValueError:
-            response_object = {
-                'Error': "This user doesn`t exists"
-            }
-            logger.error("User with these credentials does not exist")
-            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-
+        # except ValueError:
+        #     response_object = {
+        #         'Error': "This user doesn`t exists" #this error is impossible, because firstly we login
+        #     }                                       #if user doesn't exist, we can't login
+        #     logger.error("User with these credentials does not exist")
+        #     return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+#this error is impossible, because firstly we login
+#if user doesn't exist, we can't login
     def put(self):
         """
         Put method for editing a user profile
@@ -223,7 +224,7 @@ class ProfileResource(Resource):
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
-            logger.error("Invalid data")
+            logger.error("Invalid data, put")
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         try:
             access = session[JWT_TOKEN]
@@ -235,24 +236,26 @@ class ProfileResource(Resource):
             }
             logger.error("Session has been expired")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            current_user = User.find_user(id=user_id)
-            if current_user is not None:
-                current_user.user_email = new_user.user_email
-                current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
-                    'utf-8')
-                current_user.user_first_name = new_user.user_first_name
-                current_user.user_last_name = new_user.user_last_name
-                current_user.user_image_file = new_user.user_image_file
-            else:
-                raise ValueError
+        # try:
+        current_user = User.find_user(id=user_id)
+        if current_user is not None:
+            current_user.user_email = new_user.user_email
+            current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
+                'utf-8')
+            current_user.user_first_name = new_user.user_first_name
+            current_user.user_last_name = new_user.user_last_name
+            current_user.user_image_file = new_user.user_image_file
+        else:
+            raise ValueError
 #fix this raise-except statement
-        except ValueError:
-            response_object = {
-                'Error': 'This user doesn`t exists'
-            }
-            logger.error("User with these credentials does not exist")
-            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+        # except ValueError:
+        #     response_object = {
+        #         'Error': 'This user doesn`t exists'
+        #     }
+        #     logger.error("User with these credentials does not exist, put")
+        #     return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+#this error is impossible, because firstly we login
+#if user doesn't exist, we can't login
         try:
             DB.session.commit()
             logger.info("Successful request to ProfileResource, method PUT")
