@@ -15,7 +15,6 @@ from user_service import BCRYPT
 from user_service.utils.user_utils import get_reset_token, verify_reset_token
 from user_service import MAIL
 from user_service.configs.logger import logger
-
 USER_SCHEMA = UserSchema(exclude=['id', 'user_registration_data'])
 
 JWT_TOKEN = 'jwt_token'
@@ -25,8 +24,8 @@ def send_email(user_email, token):
     """
     Implementation of sending message on email
     Args:
-        user_email:
-        token:
+        user_email
+        token
 
     Returns:
         status
@@ -45,35 +44,51 @@ def send_email(user_email, token):
     return status.HTTP_200_OK
 
 
+
 class ResetPasswordRequestResource(Resource):
     """Implementation of reset password request on mail"""
     def post(self):
-        """Post method for reset password"""
+        """
+        Post method for reset password
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             data = request.json
             user_email = data['user_email']
-        except ValidationError as error:
-            logger.error("Invalid data")
-            return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+        except TypeError as error:
+            response_object = {
+                    'Error': 'Invalid data type'
+                }
+            logger.error("Invalid data type")
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
         try:
             user = User.query.filter_by(user_email=user_email).scalar()
             token = get_reset_token(user)
-            try:
-                send_email(user_email, token)
-                logger.info("Sucessful request to ResetPasswordRequestResource, method POST")
-                return status.HTTP_200_OK
-            except ValueError:
-                response_object = {
-                    'Error': 'No user found'
-                }
-                logger.error("Invalid user credentials")
-                return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
+            # try:
+            send_email(user_email, token)
+            logger.info("Sucessful request to ResetPasswordRequestResource, method POST")
+            return status.HTTP_200_OK
+            # except ValueError:
+            #     response_object = {
+            #         'Error': 'Unsuccessful execution of send_email() function'
+            #     }
+            #     logger.error("Unsuccessful execution of send_email() function")
+            #     return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         except:
-            logger.error("") #actually don't know what kind of response do we need over here
+            logger.error("User with this email not found") #actually don't know what kind of response do we need over here
             return status.HTTP_400_BAD_REQUEST
 
     def put(self):
-        """Put method for reset password"""
+        """
+        Put method for reset password
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             token = request.args.get('token')
         except TimeoutError:
@@ -115,7 +130,13 @@ class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
 
     def post(self):
-        """Post method for creating an user"""
+        """
+        Post method for creating a user
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
@@ -125,12 +146,12 @@ class ProfileResource(Resource):
         try:
             is_exists = DB.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
             if not is_exists:
-                try:
-                    new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode(
-                        'utf-8')
-                except ValidationError as error:
-                    logger.error("Invalid data")
-                    return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+                # try:
+                new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode(
+                    'utf-8')
+                # except ValidationError as error:
+                #     logger.error("Invalid data")
+                #     return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
             else:
                 raise ValueError
 #fix this raise-except statement
@@ -154,10 +175,16 @@ class ProfileResource(Resource):
                 'Error': 'Database error'
             }
             logger.error("Internal database error")
-            return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
+            return make_response(jsonify(response_object), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self):
-        """Get method for returning user data"""
+        """
+        Get method for viewing a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             access = session[JWT_TOKEN]
         except KeyError:
@@ -166,34 +193,43 @@ class ProfileResource(Resource):
             }
             logger.error("User is unauthorized")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            user_info = decode_token(access)
-            user_id = user_info['identity']
-            current_user = User.find_user(id=user_id)
-            if current_user is not None:
-                try:
-                    user_to_response = USER_SCHEMA.dump(current_user)
-                    logger.info("Successful request to ProfileResource, method GET")
-                    return make_response(jsonify(user_to_response), status.HTTP_200_OK)
-                except ValidationError as error:
-                    logger.error("Invalid data")
-                    return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-            else:
-                raise ValueError
+        # try:
+        user_info = decode_token(access)
+        user_id = user_info['identity']
+        current_user = User.find_user(id=user_id)
+        if current_user is not None:
+            # try:
+            user_to_response = USER_SCHEMA.dump(current_user)
+            logger.info("Successful request to ProfileResource, method GET")
+            return make_response(jsonify(user_to_response), status.HTTP_200_OK)
+            # except ValidationError as error:
+                
+            #     logger.error("Invalid data")
+            #     return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     raise ValueError
 #fix this raise-except statement
-        except ValueError:
-            response_object = {
-                'Error': "This user doesn`t exists"
-            }
-            logger.error("User with these credentials does not exist")
-            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+        # except ValueError:
+        #     response_object = {
+        #         'Error': "This user doesn`t exists" #this error is impossible, because firstly we login
+        #     }                                       #if user doesn't exist, we can't login
+        #     logger.error("User with these credentials does not exist")
+        #     return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
+#these errors are impossible, because firstly we login
+#if user doesn't exist, we can't log in
     def put(self):
-        """Put metod for editing user data"""
+        """
+        Put method for editing a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
-            logger.error("Invalid data")
+            logger.error("Invalid data, put")
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
         try:
             access = session[JWT_TOKEN]
@@ -221,8 +257,9 @@ class ProfileResource(Resource):
             response_object = {
                 'Error': 'This user doesn`t exists'
             }
-            logger.error("User with these credentials does not exist")
+            logger.error("User with these credentials does not exist, put")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+
         try:
             DB.session.commit()
             logger.info("Successful request to ProfileResource, method PUT")
@@ -236,7 +273,13 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
     def delete(self):
-        """Delete method for deleting user account"""
+        """
+        Delete method for deleting a user profile
+        Args:
+            self
+        Returns:
+            status
+        """
         try:
             access = session[JWT_TOKEN]
         except KeyError:
