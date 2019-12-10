@@ -33,17 +33,21 @@ class TestsForUserService(BaseTest):
             self.assertEqual(response.status, '400 BAD REQUEST')
 
    
-    # def test_invalid_user_registration_database_error(self): #???
-    #     pass
+    def test_invalid_user_registration_database_error(self): #+
+        with open('tests/request_files/invalid_user_reg_db_error.json', 'r') as data:
+            data = json.loads(data.read())
+            response=self.APP.post('/profile', json=data)
+            self.assertEqual(response.status, '400 BAD REQUEST') 
+        
 
     def test_user_profile_get_unauthorized(self): #+
         response=self.APP.get('/profile')
         self.assertEqual(response.status, '401 UNAUTHORIZED')
 
     def test_user_profile_get_success(self): #invalid login
-        with open('tests/request_files/get_success.json', 'r') as data:
-            data = json.loads(data.read())
-            response_login=self.APP.post('/login', json=data)
+         with open('tests/request_files/login_success.json', 'r') as data_login:
+            data_login = json.loads(data_login.read())
+            response_login=self.APP.post('/login', json=data_login)
             if response_login.status =='200 OK':
                 response=self.APP.get('/profile')
                 self.assertEqual(response.status, '200 OK')
@@ -104,7 +108,11 @@ class TestsForUserService(BaseTest):
         self.assertEqual(response.status, '401 UNAUTHORIZED')
     
     def test_user_profile_delete_authorized(self): #+
-        with open('tests/request_files/get_success.json', 'r') as data:
+        # with open('tests/request_files/user_to_del.json', 'r') as data:
+        #     data = json.loads(data.read())
+        #     response_status=self.APP.post('/profile', json=data)
+        #     if response_status=='200 OK':
+        with open('tests/request_files/delete_success.json', 'r') as data:
             data = json.loads(data.read())
             response_login=self.APP.post('/login', json=data)
             if response_login.status =='200 OK':
@@ -136,6 +144,17 @@ class TestsForUserService(BaseTest):
             response=self.APP.post('/login', json=data)
             self.assertEqual(response.status, '400 BAD REQUEST')
 
+
+
+    def test_edit_profile_db_error(self):
+        with open('tests/request_files/edit_login.json', 'r') as data:
+            data = json.loads(data.read())
+            response_login=self.APP.post('/login', json=data)
+            if response_login=='200 OK':
+                with open('tests/request_files/edit_profile_db_error.json', 'r') as data_file:
+                    data_file = json.loads(data.read())
+                    response=self.APP.put('/profile', json=data_file)
+                    self.assertEqual(response.status, '400 BAD REQUEST')
 
 
 
@@ -174,7 +193,6 @@ class TestsForUserService(BaseTest):
 
     # def test_reset_password_put_invalid_data(self):
     
-    # def test_reset_password_put_db_error(self):
 
 
 

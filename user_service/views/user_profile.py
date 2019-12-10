@@ -78,7 +78,7 @@ class ResetPasswordRequestResource(Resource):
             #     logger.error("Unsuccessful execution of send_email() function")
             #     return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
         except:
-            logger.error("User with this email not found") #actually don't know what kind of response do we need over here
+            logger.error("User with this email not found") 
             return status.HTTP_400_BAD_REQUEST
 
     def put(self):
@@ -175,7 +175,7 @@ class ProfileResource(Resource):
                 'Error': 'Database error'
             }
             logger.error("Internal database error")
-            return make_response(jsonify(response_object), status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
 
     def get(self):
         """
@@ -255,7 +255,7 @@ class ProfileResource(Resource):
 #fix this raise-except statement
         except ValueError:
             response_object = {
-                'Error': 'This user doesn`t exists'
+                'Error': 'This user doesn`t exist'
             }
             logger.error("User with these credentials does not exist, put")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)

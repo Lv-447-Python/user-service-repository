@@ -7,7 +7,7 @@ from tests.tests_for_user_service import TestsForUserService
 from user_service.configs.logger import logger
 import unittest
 
-#coverage run run_tests.py
+# coverage run run_tests.py
 # coverage report -m --skip-covered
 
 if __name__ == "__main__":
