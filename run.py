@@ -6,4 +6,4 @@ from user_service.configs.logger import logger
 
 if __name__ == '__main__':
     logger.info("Running the app...")
-    APP.run(debug=True)
+    APP.run(debug=True, host='0.0.0.0')
