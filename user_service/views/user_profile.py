@@ -102,29 +102,25 @@ class ResetPasswordRequestResource(Resource):
         except ValidationError as error:
             logger.error("Invalid data")
             return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-        try:
-            if user_password == user_password_confirm:
-                try:
-                    user.user_password = BCRYPT.generate_password_hash(user_password, 10).decode('utf-8')
-                    DB.session.commit()
-                    logger.info("Successful request to ResetPasswordResourse, method PUT")
-                    return status.HTTP_200_OK
-                except IntegrityError:
-                    DB.session.rollback()
-                    response_object = {
-                        'Error': 'Database error'
-                    }
-                    logger.error("Internal database error")
-                    return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
-#fix this raise-except statement
-            else:
-                raise TypeError
-        except TypeError:
+        if user_password == user_password_confirm:
+            try:
+                user.user_password = BCRYPT.generate_password_hash(user_password, 10).decode('utf-8')
+                DB.session.commit()
+                logger.info("Successful request to ResetPasswordResourse, method PUT")
+                return status.HTTP_200_OK
+            except IntegrityError:
+                DB.session.rollback()
                 response_object = {
-                    'Error': 'Passwords do not match'
+                    'Error': 'Database error'
                 }
-                logger.error("Data in user_password and user_password_confirm does not match")
-                return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+                logger.error("Internal database error")
+                return make_response(jsonify(response_object), status.HTTP_400_BAD_REQUEST)
+        else:
+            response_object = {
+                'Error': 'Passwords do not match'
+            }
+            logger.error("Data in user_password and user_password_confirm does not match")
+            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
 class ProfileResource(Resource):
     """Implementation profile methods for editing user data"""
@@ -143,19 +139,15 @@ class ProfileResource(Resource):
             logger.error("Invalid data")
             return make_response(jsonify(error.messages),
                                  status.HTTP_400_BAD_REQUEST)
-        try:
-            is_exists = DB.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
-            if not is_exists:
-                try:
-                    new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode(
-                        'utf-8')
-                except ValidationError as error:
-                    logger.error("Invalid data")
-                    return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-            else:
-                raise ValueError
-#fix this raise-except statement
-        except ValueError:
+        is_exists = DB.session.query(User.id).filter_by(user_name=new_user.user_name).scalar() is not None
+        if not is_exists:
+            try:
+                new_user.user_password = BCRYPT.generate_password_hash(new_user.user_password, round(10)).decode(
+                    'utf-8')
+            except ValidationError as error:
+                logger.error("Invalid data")
+                return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+        else:
             response_object = {
                 'Error': 'This user already exists'
             }
@@ -165,8 +157,6 @@ class ProfileResource(Resource):
             DB.session.add(new_user)
             DB.session.commit()
             session.permanent = True
-            access_token = create_access_token(identity=new_user.id, expires_delta=False)
-            session[JWT_TOKEN] = access_token
             logger.info("Successful request to ProfileResource, method POST")
             return status.HTTP_201_CREATED
         except IntegrityError:
@@ -193,25 +183,21 @@ class ProfileResource(Resource):
             }
             logger.error("User is unauthorized")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            user_info = decode_token(access)
-            user_id = user_info['identity']
-            current_user = User.find_user(id=user_id)
-            if current_user is not None:
-                try:
-                    user_to_response = USER_SCHEMA.dump(current_user)
-                    logger.info("Successful request to ProfileResource, method GET")
-                    return make_response(jsonify(user_to_response), status.HTTP_200_OK)
-                except ValidationError as error:
-                    logger.error("Invalid data")
-                    return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
-            else:
-                raise ValueError
-#fix this raise-except statement
-        except ValueError:
+        user_info = decode_token(access)
+        user_id = user_info['identity']
+        current_user = User.find_user(id=user_id)
+        if current_user is not None:
+            try:
+                user_to_response = USER_SCHEMA.dump(current_user)
+                logger.info("Successful request to ProfileResource, method GET")
+                return make_response(jsonify(user_to_response), status.HTTP_200_OK)
+            except ValidationError as error:
+                logger.error("Invalid data")
+                return make_response(jsonify(error.messages), status.HTTP_400_BAD_REQUEST)
+        else:
             response_object = {
-                'Error': "This user doesn`t exists" 
-            }                                      
+                'Error': "This user doesn`t exists"
+            }
             logger.error("User with these credentials does not exist")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
@@ -238,25 +224,20 @@ class ProfileResource(Resource):
             }
             logger.error("Session has been expired")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            current_user = User.find_user(id=user_id)
-            if current_user is not None:
-                current_user.user_email = new_user.user_email
-                current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
-                    'utf-8')
-                current_user.user_first_name = new_user.user_first_name
-                current_user.user_last_name = new_user.user_last_name
-                current_user.user_image_file = new_user.user_image_file
-            else:
-                raise ValueError
-#fix this raise-except statement
-        except ValueError:
+        current_user = User.find_user(id=user_id)
+        if current_user is not None:
+            current_user.user_email = new_user.user_email
+            current_user.user_password = BCRYPT.generate_password_hash(new_user.user_password).decode(
+                'utf-8')
+            current_user.user_first_name = new_user.user_first_name
+            current_user.user_last_name = new_user.user_last_name
+            current_user.user_image_file = new_user.user_image_file
+        else:
             response_object = {
                 'Error': 'This user doesn`t exist'
             }
             logger.error("User with these credentials does not exist, put")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-
         try:
             DB.session.commit()
             logger.info("Successful request to ProfileResource, method PUT")

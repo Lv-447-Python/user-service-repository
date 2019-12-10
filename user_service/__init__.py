@@ -16,13 +16,22 @@ from flask_mail import Mail
 APP = Flask(__name__)
 API = Api(APP)
 
-CORS(APP, supports_credentials=True)
+# CORS(APP, supports_credentials=True)
 
 BCRYPT = Bcrypt(APP)
 
+POSTGRES = {
+    'user': 'postgres',
+    'pw': '',
+    'db': 'UserDB',
+    'host': 'db',
+    'port': '5432',
+}
+
 JWT = JWTManager(APP)
 APP.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:1234@127.0.0.1:5432/userdb'
+APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://%(user)s:\
+%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
 APP.config['SECRET_KEY'] = 'jwt-secret-string'
 APP.config['JWT_TOKEN_LOCATION'] = ['cookies']
 

@@ -47,12 +47,8 @@ class LoginResource(Resource):
                 'Error': 'You didn`t enter required data'
             }
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-        try:
-            check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
-            if not check_password:
-                raise AttributeError
-#fix this raise-except statement
-        except AttributeError:
+        check_password = BCRYPT.check_password_hash(current_user.user_password, data['user_password'])
+        if not check_password:
             response_object = {
                 'Error': 'Your password or login is invalid'
             }
@@ -66,5 +62,20 @@ class LoginResource(Resource):
         return status.HTTP_200_OK
 
 
+class AuthResource(Resource):
+    """Implementation sign in method"""
+    def get(self):
+        try:
+            access = session[JWT_TOKEN]
+            return status.HTTP_200_OK
+        except KeyError:
+            response_object = {
+                'Error': 'You`re unauthorized'
+            }
+            logger.error("User is unauthorized")
+            return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
+
+
 API.add_resource(LogoutResource, '/logout')
 API.add_resource(LoginResource, '/login')
+API.add_resource(AuthResource, '/auth')
