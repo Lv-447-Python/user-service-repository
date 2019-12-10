@@ -288,29 +288,29 @@ class ProfileResource(Resource):
             }
             logger.error("User is unauthorized")
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
-        try:
-            user_info = decode_token(access)
-            user_id = user_info['identity']
-            current_user = User.find_user(id=user_id)
-            DB.session.delete(current_user)
-        except exc.UnmappedInstanceError:
-            response_object = {
-                'Error': 'This user doesn`t exists'
-            }
-            logger.error("User with these credentials does not exist")
-            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
-        try:
-            DB.session.commit()
-            session.clear()
-            logger.info("Successful request to ProfileResource, method DELETE")
-            return status.HTTP_200_OK
-        except IntegrityError:
-            response_object = {
-                'Error': 'Database error'
-            }
-            DB.session.rollback()
-            logger.error("Internal database error")
-            return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+        # try:
+        user_info = decode_token(access)
+        user_id = user_info['identity']
+        current_user = User.find_user(id=user_id)
+        DB.session.delete(current_user)
+        # except exc.UnmappedInstanceError:
+        #     response_object = {
+        #         'Error': 'This user doesn`t exist'
+        #     }
+        #     logger.error("User with these credentials does not exist")
+        #     return make_response(response_object, status.HTTP_400_BAD_REQUEST)
+        # try:
+        DB.session.commit()
+        session.clear()
+        logger.info("Successful request to ProfileResource, method DELETE")
+        return status.HTTP_200_OK
+        # except IntegrityError:
+        #     response_object = {
+        #         'Error': 'Database error'
+        #     }
+        #     DB.session.rollback()
+        #     logger.error("Internal database error")
+        #     return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
 
 API.add_resource(ProfileResource, '/profile')

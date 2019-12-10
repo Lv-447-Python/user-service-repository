@@ -108,10 +108,7 @@ class TestsForUserService(BaseTest):
         self.assertEqual(response.status, '401 UNAUTHORIZED')
     
     def test_user_profile_delete_authorized(self): #+
-        # with open('tests/request_files/user_to_del.json', 'r') as data:
-        #     data = json.loads(data.read())
-        #     response_status=self.APP.post('/profile', json=data)
-        #     if response_status=='200 OK':
+
         with open('tests/request_files/delete_success.json', 'r') as data:
             data = json.loads(data.read())
             response_login=self.APP.post('/login', json=data)
