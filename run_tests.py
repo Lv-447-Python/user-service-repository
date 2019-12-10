@@ -1,6 +1,7 @@
 from user_service import APP
 from user_service.views.authentication import LogoutResource
 from user_service.views.user_profile import ProfileResource
+
 from user_service.views.user_profile import ResetPasswordRequestResource
 from tests.tests_base import BaseTest
 from tests.tests_for_user_service import TestsForUserService
