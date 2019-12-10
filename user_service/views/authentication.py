@@ -72,6 +72,16 @@ class LoginResource(Resource):
         logger.info("Successful request to LoginResource, method POST")
         return status.HTTP_200_OK
 
+class AuthResource(Resource):
+    """Implementation sign in method"""
+    def get(self):
+        try:
+            session[JWT_TOKEN]
+            return status.HTTP_200_OK
+        except:
+            return status.HTTP_400_BAD_REQUEST
+
 
 API.add_resource(LogoutResource, '/logout')
 API.add_resource(LoginResource, '/login')
+API.add_resource(AuthResource, '/auth')

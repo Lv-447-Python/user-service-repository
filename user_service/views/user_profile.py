@@ -134,9 +134,10 @@ class ProfileResource(Resource):
             status
         """
         try:
+            print(request.json)
             new_user = USER_SCHEMA.load(request.json)
         except ValidationError as error:
-            logger.error("Invalid data")
+            logger.error(f"Invalid vccv data {error}")
             return make_response(jsonify(error.messages),
                                  status.HTTP_400_BAD_REQUEST)
         try:
