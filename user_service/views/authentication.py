@@ -67,6 +67,7 @@ class AuthResource(Resource):
     def get(self):
         try:
             access = session[JWT_TOKEN]
+            logger.info("Successful request to AuthResource, method GET")
             return status.HTTP_200_OK
         except KeyError:
             response_object = {

@@ -170,6 +170,20 @@ class TestsForUserService(BaseTest):
             response=self.APP.post('/reset-password', json=data)
             self.assertEqual(response.status, '200 OK')
 
+    def test_authentication_check_success(self):
+        with open('tests/request_files/login_success.json', 'r') as data:
+            data = json.loads(data.read())
+            response_login=self.APP.post('/login', json=data)
+            if response_login.status=='200 OK':
+                response=self.APP.get('/auth')
+                self.assertEqual(response.status, '200 OK')
+    
+    def test_authentication_check_invalid(self):
+        response=self.APP.get('/auth')
+        self.assertEqual(response.status, '401 UNAUTHORIZED')
+
+
+
 
     # def test_reset_password_post_no_user_with_this_email(self):
     #     with open('tests/request_files/reset_pass_post_invalid_data.json', 'r') as data:
