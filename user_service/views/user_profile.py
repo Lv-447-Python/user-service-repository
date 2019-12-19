@@ -156,7 +156,6 @@ class ProfileResource(Resource):
         try:
             DB.session.add(new_user)
             DB.session.commit()
-            session.permanent = True
             logger.info("Successful request to ProfileResource, method POST")
             return status.HTTP_201_CREATED
         except IntegrityError:

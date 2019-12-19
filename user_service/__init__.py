@@ -16,7 +16,7 @@ from flask_mail import Mail
 APP = Flask(__name__)
 API = Api(APP)
 
-# CORS(APP, supports_credentials=True)
+CORS(APP, supports_credentials=True)
 
 BCRYPT = Bcrypt(APP)
 
