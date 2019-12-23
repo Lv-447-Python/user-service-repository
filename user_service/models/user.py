@@ -25,7 +25,7 @@ class User(DB.Model, UserMixin):
     user_first_name = Column(String(25), nullable=False)
     user_last_name = Column(String(25), nullable=False)
     user_image_file = Column(String(25), nullable=False)
-    user_registration_data = Column(DateTime, nullable=False, default=datetime.datetime.now())
+    user_registration_data = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     @classmethod
     def find_user(cls, **kwargs):
