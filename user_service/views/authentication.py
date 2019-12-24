@@ -55,7 +55,7 @@ class LoginResource(Resource):
             logger.error("Invalid login or password")
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
-        session.permanent = True
+        # session.permanent = True
         access_token = create_access_token(identity=current_user.id, expires_delta=False)
         session[JWT_TOKEN] = access_token
         logger.info("Successful request to LoginResource, method POST")

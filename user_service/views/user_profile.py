@@ -176,6 +176,7 @@ class ProfileResource(Resource):
         """
         try:
             access = session[JWT_TOKEN]
+            logger.info("ACCESS %s", access)
         except KeyError:
             response_object = {
                 'Error': 'You`re unauthorized'
