@@ -291,5 +291,5 @@ class ProfileResource(Resource):
             return make_response(response_object, status.HTTP_400_BAD_REQUEST)
 
 
-API.add_resource(ProfileResource, '/profile')
-API.add_resource(ResetPasswordRequestResource, '/reset-password')
+API.add_resource(ProfileResource, '/user-service/api/profile')
+API.add_resource(ResetPasswordRequestResource, '/user-service/api/reset-password')

@@ -77,6 +77,6 @@ class AuthResource(Resource):
             return make_response(response_object, status.HTTP_401_UNAUTHORIZED)
 
 
-API.add_resource(LogoutResource, '/logout')
-API.add_resource(LoginResource, '/login')
-API.add_resource(AuthResource, '/auth')
+API.add_resource(LogoutResource, '/user-service/api/logout')
+API.add_resource(LoginResource, '/user-service/api/login')
+API.add_resource(AuthResource, '/user-service/api/auth')

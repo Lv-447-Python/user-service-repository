@@ -1,6 +1,14 @@
 import unittest
 from user_service import APP, DB, MAIL
 
+POSTGRES = {
+    'user': 'postgres',
+    'pw': '',
+    'db': 'UserDB',
+    'host': 'db',
+    'port': '5432',
+}
+
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
@@ -10,6 +18,7 @@ class BaseTest(unittest.TestCase):
             None
         """
         APP.config['TESTING'] = True
-        APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://postgres:1234@127.0.0.1:5432/userdb'
+        APP.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://%(user)s:\
+        %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
         self.APP = APP.test_client()
         DB.create_all()

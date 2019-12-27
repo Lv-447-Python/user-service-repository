@@ -1,5 +1,4 @@
 """Initial file with main settings"""
-# import POSTGRES as POSTGRES
 import smtplib
 
 from flask import Flask
